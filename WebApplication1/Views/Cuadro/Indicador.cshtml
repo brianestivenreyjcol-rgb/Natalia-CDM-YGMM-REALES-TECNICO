@@ -1,0 +1,25 @@
+@model ModeloIndicador
+@{
+    ViewData["Title"] = Model.Marco.Titulo;
+}
+<div id="informe">
+    <partial name="_Cabecera" model="Model.Marco.Cromo" />
+    <main class="lienzo">
+        <form class="tablero" method="get" action="@Model.Marco.Ruta" data-filtros>
+            <partial name="_PanelFiltros" model="Model.Marco" />
+            <div class="contenido">
+                <partial name="_Indicadores" model="Model.Marco.Indicadores" />
+
+                <div class="rejilla rejilla-indicador">
+                    <partial name="_GraficoColumnas" model="Model.PorMarca" />
+                    <partial name="_GraficoBarras" model="Model.PorServicio" />
+                    <partial name="_GraficoBarras" model="Model.PorDetallado" />
+                    <partial name="_GraficoLineas" model="Model.PorSemana" />
+                    <partial name="_GraficoLineas" model="Model.PorDia" />
+                </div>
+
+                <partial name="_NotaPie" model="Model.Marco" />
+            </div>
+        </form>
+    </main>
+</div>

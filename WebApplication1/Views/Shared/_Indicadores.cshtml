@@ -1,0 +1,15 @@
+@model IReadOnlyList<TarjetaIndicador>
+<section class="resumen resumen-cinco" aria-label="Indicadores del periodo">
+    @foreach (var tarjeta in Model)
+    {
+        <div class="resumen-dato @(tarjeta.Destacada ? "destacado" : null)" title="@tarjeta.Indicador.Formula()">
+            <span class="resumen-titulo">@tarjeta.Indicador.Nombre()</span>
+            <strong>@Formato.Valor(tarjeta.Valor, tarjeta.Indicador.Tipo())</strong>
+            <div class="tend">
+                <span class="tend-dif @Formato.ClaseVariacion(tarjeta.Variacion, tarjeta.Indicador.Sentido())" title="@tarjeta.Comparacion">
+                    @tarjeta.ComparacionCorta @if (tarjeta.Variacion is not null) {<b>@Formato.Variacion(tarjeta.Variacion)</b>}
+                </span>
+            </div>
+        </div>
+    }
+</section>

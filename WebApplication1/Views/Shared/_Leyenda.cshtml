@@ -1,0 +1,7 @@
+@model IReadOnlyList<SerieGrafico>
+<ul class="leyenda">
+    @foreach (var serie in Model)
+    {
+        <li class="@serie.Clase"><i aria-hidden="true"></i>@serie.Nombre</li>
+    }
+</ul>

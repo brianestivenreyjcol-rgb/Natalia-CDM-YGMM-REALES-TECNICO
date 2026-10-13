@@ -1,0 +1,65 @@
+@model MarcoPagina
+@{
+    Desplegable Campo(string clave) => Model.Desplegables.First(d => d.Campo == clave);
+    var activos = Model.FiltrosActivos;
+    var semana = Campo("semana");
+    var site = Campo("site");
+    var sector = Campo("sector");
+    var supervisor = Campo("supervisor");
+    var agente = Campo("agente");
+}
+<aside class="panel-filtros" aria-label="Filtros">
+    <button type="button" class="cmp-panel-rail" data-panel-abrir title="Abrir los filtros">
+        @Iconos.Svg("filtro")<span class="cmp-rail-texto">Filtros</span>
+        @if (activos > 0)
+        {
+            <span class="cmp-rail-cuenta" title="@activos filtros puestos">@activos</span>
+        }
+    </button>
+
+    <div class="panel-cab">
+        <p class="panel-titulo">Filtros</p>
+        @if (activos > 0)
+        {
+            <a class="panel-limpiar" href="@Model.Ruta" data-parcial>Limpiar (@activos)</a>
+        }
+        <button type="button" class="cmp-plegar" data-panel-plegar title="Plegar el panel" aria-label="Plegar el panel de filtros">@Iconos.Svg("plegar")</button>
+    </div>
+
+    <div class="grupo-filtros">
+        <h3>Periodo</h3>
+        <div class="filtro">
+            <span class="filtro-etiqueta">Rango de fechas</span>
+            <div class="rango-fechas">
+                <input type="date" name="desde" aria-label="Desde" value="@Formato.Iso(Model.Desde)" min="@Formato.Iso(Model.PrimerDia)" max="@Formato.Iso(Model.UltimoDia)" data-defecto="@Formato.Iso(Model.DesdeDefecto)" class="@(Model.Desde != Model.DesdeDefecto ? "con-valor" : null)" />
+                <input type="date" name="hasta" aria-label="Hasta" value="@Formato.Iso(Model.Hasta)" min="@Formato.Iso(Model.PrimerDia)" max="@Formato.Iso(Model.UltimoDia)" data-defecto="@Formato.Iso(Model.HastaDefecto)" class="@(Model.Hasta != Model.HastaDefecto ? "con-valor" : null)" />
+            </div>
+            <div class="atajos" aria-label="Atajos de fechas">
+                @foreach (var atajo in Model.Atajos)
+                {
+                    <a href="@atajo.Url" class="atajo @(atajo.Activo ? "activo" : null)" data-parcial>@atajo.Texto</a>
+                }
+            </div>
+        </div>
+        <partial name="_Desplegable" model="semana" />
+    </div>
+
+    <div class="grupo-filtros">
+        <h3>Equipo</h3>
+        <partial name="_Desplegable" model="site" />
+        <partial name="_Desplegable" model="sector" />
+        <partial name="_Desplegable" model="supervisor" />
+        <partial name="_Desplegable" model="agente" />
+    </div>
+
+    <div class="acciones-filtros">
+        <a class="btn-panel primario enlace-exportable" href="@Model.Enlace("/exportable")"
+           title="Detalle por conversación (CSV para Excel) con estas fechas y filtros. Se consulta a BigQuery en el momento: puede tardar hasta un minuto.">@Iconos.Svg("descarga")Exportable</a>
+        <a class="btn-panel" href="@Model.Ruta" data-parcial>@Iconos.Svg("filtro-x")Borrar filtros</a>
+    </div>
+
+    <p class="panel-estado">
+        <span class="estado-datos ok">Datos hasta el @Formato.Fecha(Model.UltimoDia)</span>
+        <span>Traídos de BigQuery el @Formato.FechaHora(Model.Actualizado) · <a href="/estado">Estado</a></span>
+    </p>
+</aside>

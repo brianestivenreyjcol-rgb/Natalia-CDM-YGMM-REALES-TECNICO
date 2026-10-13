@@ -1,0 +1,134 @@
+@model GraficoLineas
+@{
+    var n = Model.Categorias.Count;
+    var valores = Model.Series.SelectMany(s => s.Valores).OfType<double>().ToList();
+    var escala = Escala.Calcular(valores, Model.DesdeCero, Model.Tipo == TipoValor.Porcentaje);
+    var marcas = escala.Marcas().ToList();
+    var rotulados = Graficas.Rotulados(n);
+    var ejeX = Graficas.EtiquetasVisibles(Model.Categorias);
+    // El degradado bajo la línea solo con una o dos series: con más, ensucia la gráfica
+    var conArea = Model.Series.Count <= 2;
+
+    // Con volumen, la línea ocupa la parte de arriba del plano y las atendidas, en gris, la de abajo (34 %)
+    var volumen = Model.Volumen;
+    var maxVolumen = volumen?.OfType<double>().DefaultIfEmpty(0).Max() ?? 0;
+    var conVolumen = maxVolumen > 0;
+    var altoLinea = conVolumen ? 0.62 : 1.0;
+    var anchoColumna = Math.Min(0.07, 0.62 / Math.Max(n, 1));
+    double X(int i) => (i + 0.5) / Math.Max(n, 1);
+    double Y(double v) => (1 - escala.Fraccion(v)) * altoLinea;
+    double AltoVolumen(double v) => v / maxVolumen * 0.34;
+    string C(double fraccion) => Formato.Coord(fraccion * 1000);
+    string P(double fraccion) => Formato.Coord(fraccion * 100) + "%";
+}
+<section class="tarjeta @Model.Area">
+    <div class="tarjeta-cabecera">
+        <div>
+            <h2>@Model.Titulo</h2>
+            @if (Model.Nota is { } nota)
+            {
+                <p class="nota">@nota</p>
+            }
+        </div>
+    </div>
+    @if (Model.Vacio)
+    {
+        <p class="sin-datos">Sin datos con estos filtros.</p>
+    }
+    else
+    {
+        <figure class="grafica" aria-label="@Model.Titulo">
+            <partial name="_Leyenda" model="Model.Series" />
+            <div class="lienzo-desplazable">
+                <div class="lienzo-grafica @(n > 20 ? "denso" : null)">
+                    <div class="plano @(Model.Alto ? "alto" : null) @(conVolumen ? "con-volumen" : null)">
+                        <div class="eje-y" aria-hidden="true">
+                            @foreach (var marca in marcas)
+                            {
+                                <span style="top:@P(Y(marca))">@Formato.Eje(marca, Model.Tipo, escala.Paso)</span>
+                            }
+                        </div>
+                        <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                            @foreach (var marca in marcas)
+                            {
+                                <line class="rejilla-linea" x1="0" x2="1000" y1="@C(Y(marca))" y2="@C(Y(marca))" vector-effect="non-scaling-stroke" />
+                            }
+                            @if (conVolumen)
+                            {
+                                for (var i = 0; i < n; i++)
+                                {
+                                    if (volumen![i] is not { } atendidas || atendidas <= 0) { continue; }
+                                    var alto = AltoVolumen(atendidas);
+                                    <rect class="columna-gris" x="@C(X(i) - anchoColumna / 2)" y="@C(1 - alto)" width="@C(anchoColumna)" height="@C(alto)" />
+                                }
+                            }
+                            @for (var s = 0; s < Model.Series.Count; s++)
+                            {
+                                var serie = Model.Series[s];
+                                var degradado = $"deg-{Model.Id}-{s}";
+                                <g class="@serie.Clase">
+                                    <defs>
+                                        <linearGradient id="@degradado" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0" class="degradado-ini" />
+                                            <stop offset="1" class="degradado-fin" />
+                                        </linearGradient>
+                                    </defs>
+                                    @foreach (var tramo in Graficas.Tramos(serie.Valores))
+                                    {
+                                        var puntos = tramo.Select(p => (X: X(p.Indice) * 1000, Y: Y(p.Valor) * 1000)).ToList();
+                                        if (puntos.Count > 1)
+                                        {
+                                            if (conArea)
+                                            {
+                                                <path class="area" d="@Graficas.Area(puntos, altoLinea * 1000)" fill="url(#@degradado)" />
+                                            }
+                                            <path class="linea" d="@Graficas.Suave(puntos)" vector-effect="non-scaling-stroke" />
+                                        }
+                                    }
+                                </g>
+                            }
+                        </svg>
+                        @if (conVolumen && n <= 12)
+                        {
+                            for (var i = 0; i < n; i++)
+                            {
+                                if (volumen![i] is not { } atendidas || atendidas <= 0) { continue; }
+                                <span class="valor-volumen" style="left:@P(X(i));top:@P(1 - AltoVolumen(atendidas))">@Formato.Entero(atendidas)</span>
+                            }
+                        }
+                        @for (var s = 0; s < Model.Series.Count; s++)
+                        {
+                            var serie = Model.Series[s];
+                            for (var i = 0; i < n; i++)
+                            {
+                                if (serie.Valores[i] is not { } valor) { continue; }
+                                <span class="punto @serie.Clase" style="left:@P(X(i));top:@P(Y(valor))"></span>
+                                if (rotulados[i])
+                                {
+                                    <span class="etiqueta-punto @serie.Clase @(Graficas.PastillaArriba(Model.Series, s, i) ? "arriba" : "abajo")" style="left:@P(X(i));top:@P(Y(valor))">@Formato.Valor(valor, Model.Tipo)</span>
+                                }
+                            }
+                        }
+                        @for (var i = 0; i < n; i++)
+                        {
+                            <div class="banda" style="left:@P((double)i / n);width:@P(1.0 / n)" data-ficha="@Graficas.Ficha(Model, i)"></div>
+                        }
+                    </div>
+                    <div class="eje-x" aria-hidden="true">
+                        @for (var i = 0; i < n; i++)
+                        {
+                            if (ejeX[i])
+                            {
+                                <span style="left:@P(X(i))">@Model.Categorias[i]</span>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </figure>
+    }
+    @if (Model.Lectura is { } lectura)
+    {
+        <p class="pie-tarjeta">@lectura</p>
+    }
+</section>

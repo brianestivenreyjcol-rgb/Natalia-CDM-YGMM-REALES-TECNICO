@@ -1,0 +1,84 @@
+@model ModeloKpi
+@{
+    ViewData["Title"] = Model.Marco.Titulo;
+    var total = Model.Total;
+}
+<div id="informe">
+    <partial name="_Cabecera" model="Model.Marco.Cromo" />
+    <main class="lienzo">
+        <form class="tablero" method="get" action="@Model.Marco.Ruta" data-filtros>
+            <partial name="_PanelFiltros" model="Model.Marco" />
+            <div class="contenido">
+                <partial name="_Indicadores" model="Model.Marco.Indicadores" />
+
+                <div class="rejilla rejilla-kpi">
+                    <partial name="_GraficoColumnas" model="Model.AtendidasMarca" />
+                    <partial name="_GraficoColumnas" model="Model.TmoMarca" />
+                    <partial name="_GraficoBarras" model="Model.AtendidasSupervisor" />
+                    <partial name="_GraficoLineas" model="Model.Evolucion" />
+
+                    <section class="tarjeta area-tabla">
+                        <div class="tarjeta-cabecera">
+                            <div>
+                                <h2>Detalle por día</h2>
+                                <p class="nota">@Model.Dias.Count días · las cifras van coloreadas de verde (mejor) a rojo (peor) dentro de cada columna · pulsa una cabecera para ordenar</p>
+                            </div>
+                        </div>
+                        @if (Model.Dias.Count == 0)
+                        {
+                            <p class="sin-datos">Sin datos con estos filtros.</p>
+                        }
+                        else
+                        {
+                            <div class="envoltura-tabla">
+                                <table class="ranking" data-mapa>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" data-sentido="0"><button type="button" class="ordenar">Día</button></th>
+                                            <th scope="col" data-sentido="0"><button type="button" class="ordenar">Atendidas</button></th>
+                                            <th scope="col" data-sentido="-1"><button type="button" class="ordenar">TMO (s)</button></th>
+                                            <th scope="col" data-sentido="-1"><button type="button" class="ordenar">% Rell 24H</button></th>
+                                            <th scope="col" data-sentido="-1"><button type="button" class="ordenar">% Rell 72H</button></th>
+                                            <th scope="col" data-sentido="-1"><button type="button" class="ordenar">% No solución</button></th>
+                                            <th scope="col" data-sentido="0"><button type="button" class="ordenar">% Transferencia</button></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var dia in Model.Dias)
+                                        {
+                                            var d = dia.Datos;
+                                            <tr>
+                                                <td data-valor="@dia.Fecha.DayNumber">
+                                                    <span class="nombre-fila"><span class="nombre-texto">@Formato.FechaCorta(dia.Fecha)</span><span class="pastilla-dato">@Formato.DiaSemana(dia.Fecha)</span></span>
+                                                </td>
+                                                <td class="barra-volumen" data-valor="@d.Atendidas">@Formato.Entero(d.Atendidas)</td>
+                                                <td data-valor="@Formato.Crudo(d.Valor(Indicador.Tmo))">@Formato.Decimal(d.Valor(Indicador.Tmo))</td>
+                                                <td data-valor="@Formato.Crudo(d.Valor(Indicador.Rell24))">@Formato.Porcentaje(d.Valor(Indicador.Rell24))</td>
+                                                <td data-valor="@Formato.Crudo(d.Valor(Indicador.Rell72))">@Formato.Porcentaje(d.Valor(Indicador.Rell72))</td>
+                                                <td data-valor="@Formato.Crudo(d.Valor(Indicador.NoSolucion))">@Formato.Porcentaje(d.Valor(Indicador.NoSolucion))</td>
+                                                <td data-valor="@Formato.Crudo(d.Valor(Indicador.Transferencia))">@Formato.Porcentaje(d.Valor(Indicador.Transferencia))</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="total">
+                                            <td>Total</td>
+                                            <td>@Formato.Entero(total.Atendidas)</td>
+                                            <td>@Formato.Decimal(total.Valor(Indicador.Tmo))</td>
+                                            <td>@Formato.Porcentaje(total.Valor(Indicador.Rell24))</td>
+                                            <td>@Formato.Porcentaje(total.Valor(Indicador.Rell72))</td>
+                                            <td>@Formato.Porcentaje(total.Valor(Indicador.NoSolucion))</td>
+                                            <td>@Formato.Porcentaje(total.Valor(Indicador.Transferencia))</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        }
+                    </section>
+                </div>
+
+                <partial name="_NotaPie" model="Model.Marco" />
+            </div>
+        </form>
+    </main>
+</div>

@@ -1,0 +1,67 @@
+@model GraficoColumnas
+@{
+    var maximo = Model.Series.SelectMany(s => s.Valores).OfType<double>().DefaultIfEmpty(0).Max();
+    var tope = maximo <= 0 ? 1 : maximo * 1.12;
+    var densa = Model.Categorias.Count * Model.Series.Count > 6;
+    string P(double fraccion) => Formato.Coord(fraccion * 100) + "%";
+    string Cifra(double valor) => densa ? Formato.ValorCorto(valor, Model.Tipo) : Formato.Valor(valor, Model.Tipo);
+
+    // Con columnas estrechas, si las dos de un grupo casi igualan su altura sus cifras se pisarían:
+    // la de la columna más alta sube un escalón (164 px es el alto útil del plano de columnas).
+    bool Alta(int categoria, int serie)
+    {
+        if (!densa || Model.Series.Count != 2) return false;
+        if (Model.Series[serie].Valores[categoria] is not { } propia || Model.Series[1 - serie].Valores[categoria] is not { } otra) return false;
+        var cerca = Math.Abs(propia - otra) / tope * 164 < 14;
+        return cerca && (propia > otra || (propia == otra && serie == 0));
+    }
+}
+<section class="tarjeta @Model.Area">
+    <div class="tarjeta-cabecera">
+        <div>
+            <h2>@Model.Titulo</h2>
+            @if (Model.Nota is { } nota)
+            {
+                <p class="nota">@nota</p>
+            }
+        </div>
+    </div>
+    @if (Model.Vacio)
+    {
+        <p class="sin-datos">Sin datos con estos filtros.</p>
+    }
+    else
+    {
+        <figure class="grafica columnas @(densa ? "densa" : null)" aria-label="@Model.Titulo">
+            <partial name="_Leyenda" model="Model.Series" />
+            <div class="columnas-plano">
+                @for (var c = 0; c < Model.Categorias.Count; c++)
+                {
+                    <div class="grupo-columnas" data-ficha="@Graficas.Ficha(Model, c)">
+                        @for (var s = 0; s < Model.Series.Count; s++)
+                        {
+                            var serie = Model.Series[s];
+                            var valor = serie.Valores[c];
+                            <div class="columna @serie.Clase" style="height:@P((valor ?? 0) / tope)">
+                                @if (valor is { } v)
+                                {
+                                    <span class="etiqueta-punto @(Alta(c, s) ? "alta" : null)">@Cifra(v)</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="columnas-eje" aria-hidden="true">
+                @foreach (var categoria in Model.Categorias)
+                {
+                    <span>@categoria</span>
+                }
+            </div>
+        </figure>
+    }
+    @if (Model.Lectura is { } lectura)
+    {
+        <p class="pie-tarjeta">@lectura</p>
+    }
+</section>

@@ -1,0 +1,21 @@
+# Compilación
+bin/
+obj/
+publish/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Datos y registros locales
+App_Data/
+logs/
+*.log
+
+# Secretos: nunca al repositorio
+appsettings.*.local.json
+secrets.json
+*.pfx
+*.p12
+*-key.json

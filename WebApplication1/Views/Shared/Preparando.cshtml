@@ -1,0 +1,33 @@
+@model ModeloPreparando
+@{
+    ViewData["Title"] = "Preparando los datos";
+}
+<div id="informe" class="pantalla-aviso" data-recargar-en="@(Model.Cargando ? "10" : null)">
+    <section class="tarjeta aviso-tarjeta">
+        <a class="logotipo" href="/"><span class="logo-ygmm">YGMM</span><span class="logo-vertical">Técnico</span></a>
+        @if (Model.Cargando)
+        {
+            <span class="girando" aria-hidden="true"></span>
+            <h1>Preparando los datos…</h1>
+            <p>
+                La primera carga desde BigQuery tarda unos segundos
+                @if (Model.InicioCarga is { } inicio)
+                {
+                    <text>(empezó a las @inicio.ToString("HH:mm:ss"))</text>
+                }.
+                La página se actualizará sola.
+            </p>
+        }
+        else
+        {
+            <h1>No se pudieron traer los datos</h1>
+            <p class="aviso">@(Model.Error ?? "La consulta a BigQuery no devolvió datos.")</p>
+            <p>Se volverá a intentar automáticamente en unos minutos.</p>
+            <form method="post" asp-controller="Estado" asp-action="Actualizar">
+                <input type="hidden" name="volver" value="@Model.Volver" />
+                <button type="submit" class="btn-panel primario">@Iconos.Svg("refrescar")Volver a intentarlo</button>
+            </form>
+        }
+        <p class="aviso-enlaces"><a href="/">Inicio</a> · <a href="/estado">Estado de las conexiones</a></p>
+    </section>
+</div>

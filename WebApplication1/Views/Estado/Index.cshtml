@@ -1,0 +1,68 @@
+@model ModeloEstado
+@{
+    ViewData["Title"] = "Estado de las conexiones";
+    var cromo = new Cromo("Estado de las conexiones", "Estado", Pagina.Inicio, "");
+}
+<div id="informe" data-recargar-en="@(Model.Cargando ? "15" : null)">
+    <partial name="_Cabecera" model="cromo" />
+    <main class="lienzo">
+        <div class="contenido contenido-estrecho">
+            <section class="tarjeta">
+                <div class="tarjeta-cabecera">
+                    <div>
+                        <h2>BigQuery (ODBC)</h2>
+                        <p class="nota">Todos los datos del cuadro de mando vienen de aquí: el resumen en memoria y el Exportable</p>
+                    </div>
+                </div>
+                <div class="tarjeta-cuerpo">
+                    <dl class="datos-estado">
+                        <dt>Conexión</dt>
+                        <dd><code>@Model.ConexionBigQuery</code></dd>
+                        <dt>Datos en memoria</dt>
+                        <dd>
+                            @if (Model.Actualizado is { } actualizado)
+                            {
+                                <span class="modulo-estado ok">@Formato.Entero(Model.Filas) filas del @Formato.Fecha(Model.PrimerDia!.Value) al @Formato.Fecha(Model.UltimoDia!.Value)</span>
+                                <span class="dato-sub">Traídos el @Formato.FechaHora(actualizado) en @Formato.Decimal(Model.Duracion?.TotalSeconds, 1) s</span>
+                            }
+                            else
+                            {
+                                <span class="modulo-estado">Todavía no hay datos</span>
+                            }
+                        </dd>
+                        <dt>Carga</dt>
+                        <dd>
+                            @if (Model.Cargando)
+                            {
+                                <span class="modulo-estado en-curso">En curso desde las @Model.InicioCarga?.ToString("HH:mm:ss")</span>
+                            }
+                            else if (Model.UltimoIntento is { } intento)
+                            {
+                                <span>Último intento: @Formato.FechaHora(intento)</span>
+                            }
+                        </dd>
+                        <dt>Ventana</dt>
+                        <dd>Últimos @Model.DiasHistorico días, se refresca cada @Model.MinutosActualizacion minutos</dd>
+                        @if (Model.UltimoError is not null)
+                        {
+                            <dt>Último error</dt>
+                            <dd><p class="aviso">@Model.UltimoError</p></dd>
+                        }
+                        @if (Model.PruebaBigQuery is { } prueba)
+                        {
+                            <dt>Prueba</dt>
+                            <dd><span class="modulo-estado @(prueba.Correcta ? "ok" : "error")">@prueba.Mensaje (@prueba.Milisegundos ms)</span></dd>
+                        }
+                    </dl>
+                </div>
+                <div class="pie-tarjeta acciones-estado">
+                    <form method="post" asp-controller="Estado" asp-action="Actualizar">
+                        <input type="hidden" name="volver" value="/estado" />
+                        <button type="submit" class="btn-panel primario" disabled="@Model.Cargando">@Iconos.Svg("refrescar")Actualizar datos ahora</button>
+                    </form>
+                    <a class="btn-panel" href="/estado?probar=true">@Iconos.Svg("base-datos")Probar la conexión</a>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>

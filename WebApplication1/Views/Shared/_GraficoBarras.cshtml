@@ -1,0 +1,48 @@
+@model GraficoBarras
+@{
+    var maximo = Model.Series.SelectMany(s => s.Valores).OfType<double>().DefaultIfEmpty(0).Max();
+    var tope = maximo <= 0 ? 1 : maximo;
+}
+<section class="tarjeta @Model.Area">
+    <div class="tarjeta-cabecera">
+        <div>
+            <h2>@Model.Titulo</h2>
+            @if (Model.Nota is { } nota)
+            {
+                <p class="nota">@nota</p>
+            }
+        </div>
+    </div>
+    @if (Model.Vacio)
+    {
+        <p class="sin-datos">Sin datos con estos filtros.</p>
+    }
+    else
+    {
+        <figure class="grafica barras" aria-label="@Model.Titulo">
+            <partial name="_Leyenda" model="Model.Series" />
+            <div class="hbarras @(Model.Gruesas ? "gruesas" : null)">
+                @for (var c = 0; c < Model.Categorias.Count; c++)
+                {
+                    <div class="hbarra-grupo" data-ficha="@Graficas.Ficha(Model, c)">
+                        <span class="hbarra-nombre">@Model.Categorias[c]</span>
+                        <div class="hbarra-pistas">
+                            @foreach (var serie in Model.Series)
+                            {
+                                var valor = serie.Valores[c];
+                                <div class="hbarra @serie.Clase">
+                                    <span class="hbarra-relleno" style="--fraccion:@Formato.Coord((valor ?? 0) / tope)"></span>
+                                    <span class="hbarra-valor">@Formato.Valor(valor, Model.Tipo)</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </figure>
+    }
+    @if (Model.Lectura is { } lectura)
+    {
+        <p class="pie-tarjeta">@lectura</p>
+    }
+</section>

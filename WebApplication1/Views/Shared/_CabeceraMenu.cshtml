@@ -1,0 +1,12 @@
+@model string
+@* Cabecera de las portadas (como los menús del portal): logotipo, dónde estamos y, a la derecha, Estado y Tema *@
+<header class="cabecera cabecera-menu">
+    <a class="marca-app" href="/" aria-label="Inicio · YGMM Técnico">
+        <span class="logotipo"><span class="logo-ygmm">YGMM</span><span class="logo-vertical">Técnico</span></span>
+        <span class="marca-app-texto">@Model</span>
+    </a>
+    <div class="cabecera-acciones">
+        <a class="btn-tema" href="/estado">@Iconos.Svg("base-datos")Estado</a>
+        <button type="button" class="btn-tema" data-boton-tema title="Cambiar entre tema automático, claro y oscuro">@Iconos.Svg("tema")<span data-texto-tema>Tema</span></button>
+    </div>
+</header>

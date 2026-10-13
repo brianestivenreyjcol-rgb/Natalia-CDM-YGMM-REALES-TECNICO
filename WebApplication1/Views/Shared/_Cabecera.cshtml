@@ -1,0 +1,32 @@
+@model Cromo
+@{
+    var enlaces = Navegacion.Enlaces;
+    var (seccion, rutaSeccion) = ("Cuadro de mando", "/");
+}
+<header class="cabecera">
+    <div class="cabecera-marca">
+        <a class="logotipo" href="/" title="Inicio">
+            <span class="logo-ygmm">YGMM</span>
+            <span class="logo-vertical">Técnico</span>
+        </a>
+    </div>
+    <div class="cabecera-titulo">
+        <h1>@Model.Titulo</h1>
+        <nav class="subtitulo migas" aria-label="Estás en">
+            <a href="/">YGMM Técnico</a><span class="miga-sep" aria-hidden="true">›</span><a href="@rutaSeccion">@seccion</a><span class="miga-sep" aria-hidden="true">›</span><span class="miga-actual">@Model.Miga</span>
+        </nav>
+    </div>
+    <div class="cabecera-acciones">
+        <button type="button" class="btn-tema" data-imprimir title="Imprimir la página">@Iconos.Svg("imprimir")Imprimir</button>
+        <button type="button" class="btn-tema" data-presentar title="Pantalla completa, sin filtros ni botones">@Iconos.Svg("presentar")Presentar</button>
+        <button type="button" class="btn-tema" data-boton-tema title="Cambiar entre tema automático, claro y oscuro">@Iconos.Svg("tema")<span data-texto-tema>Tema</span></button>
+    </div>
+</header>
+<nav class="navegacion" aria-label="Páginas de @seccion">
+    @foreach (var enlace in enlaces)
+    {
+        var activa = enlace.Pagina == Model.Pagina;
+        <a class="pastilla @(activa ? "activa" : null)" href="@(enlace.Ruta + Model.Consulta)" aria-current="@(activa ? "page" : null)">@enlace.Texto</a>
+    }
+</nav>
+<button type="button" class="pres-salir" data-presentar-salir hidden>@Iconos.Svg("cerrar")Salir de la presentación</button>

@@ -1,0 +1,32 @@
+@model Desplegable
+<div class="filtro">
+    <span class="filtro-etiqueta" id="etiqueta-@Model.Campo">@Model.Etiqueta</span>
+    <details class="multi" data-campo="@Model.Campo">
+        <summary class="multi-boton @(Model.Marcadas > 0 ? "con-valor" : null)" aria-labelledby="etiqueta-@Model.Campo">
+            <span class="multi-texto">@Model.Resumen</span>
+        </summary>
+        <div class="multi-panel">
+            @if (Model.Opciones.Count > 8)
+            {
+                <input type="search" class="multi-buscar" placeholder="Buscar…" aria-label="Buscar en @Model.Etiqueta" data-buscar autocomplete="off" />
+            }
+            <div class="multi-lista">
+                @foreach (var opcion in Model.Opciones)
+                {
+                    <label class="opcion">
+                        <input type="checkbox" name="@Model.Campo" value="@opcion.Valor" checked="@opcion.Marcada" />
+                        <span>@opcion.Texto</span>
+                    </label>
+                }
+                @if (Model.Opciones.Count == 0)
+                {
+                    <p class="sin-opciones">No hay opciones con estos filtros.</p>
+                }
+            </div>
+            @if (Model.Marcadas > 0)
+            {
+                <button type="button" class="multi-quitar" data-quitar>Quitar selección (@Model.Marcadas)</button>
+            }
+        </div>
+    </details>
+</div>

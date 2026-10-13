@@ -1,0 +1,30 @@
+@model ModeloDashboard
+@{
+    ViewData["Title"] = Model.Marco.Titulo;
+}
+<div id="informe">
+    <partial name="_Cabecera" model="Model.Marco.Cromo" />
+    <main class="lienzo">
+        <form class="tablero" method="get" action="@Model.Marco.Ruta" data-filtros>
+            <partial name="_PanelFiltros" model="Model.Marco" />
+            <div class="contenido">
+                <partial name="_Indicadores" model="Model.Marco.Indicadores" />
+
+                <div class="rejilla rejilla-dashboard">
+                    <partial name="_GraficoLineas" model="Model.NoSolucionSemana" />
+                    <partial name="_GraficoColumnas" model="Model.NoSolucionMarca" />
+                    <partial name="_GraficoBarras" model="Model.NoSolucionServicio" />
+
+                    <partial name="_GraficoLineas" model="Model.Rell72Semana" />
+                    <partial name="_GraficoColumnas" model="Model.Rell72Marca" />
+                    <partial name="_GraficoBarras" model="Model.Rell72Servicio" />
+
+                    <partial name="_GraficoLineas" model="Model.TmoSemana" />
+                    <partial name="_GraficoLineas" model="Model.AtendidasDia" />
+                </div>
+
+                <partial name="_NotaPie" model="Model.Marco" />
+            </div>
+        </form>
+    </main>
+</div>

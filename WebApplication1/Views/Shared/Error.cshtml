@@ -1,0 +1,16 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+<div id="informe" class="pantalla-aviso">
+    <section class="tarjeta aviso-tarjeta">
+        <a class="logotipo" href="/"><span class="logo-ygmm">YGMM</span><span class="logo-vertical">Técnico</span></a>
+        <h1>Algo ha fallado</h1>
+        <p>No se pudo atender la petición.</p>
+        @if (Model.ShowRequestId)
+        {
+            <p class="nota">Identificador: <code>@Model.RequestId</code></p>
+        }
+        <p class="aviso-enlaces"><a href="/">Inicio</a> · <a href="/estado">Estado de las conexiones</a></p>
+    </section>
+</div>

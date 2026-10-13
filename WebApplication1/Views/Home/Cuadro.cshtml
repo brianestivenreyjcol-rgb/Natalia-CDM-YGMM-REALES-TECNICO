@@ -1,0 +1,63 @@
+@model ModeloPortada
+@{
+    ViewData["Title"] = "Cuadro de mando";
+    var (claseEstado, textoEstado) = Model.Actualizado is { } actualizado
+        ? ("ok", $"Datos cargados el {Formato.FechaHora(actualizado)}")
+        : Model.Cargando ? ("en-curso", "Cargando los datos de BigQuery…")
+        : Model.Error is not null ? ("error", "No se pudieron cargar los datos") : ("", "Sin datos todavía");
+    var detalle = Model.UltimoDia is { } ultimo ? $"Hasta el {Formato.Fecha(ultimo)}" : "Se cargan al arrancar";
+    var informes = new[]
+    {
+        (Ruta: "/dashboard", Icono: Iconos.Svg("tablero"), Antetitulo: "Visión general", Titulo: "Dashboard principal",
+         Descripcion: "No solución, rellamada 72H, TMO y atendidas por site, marca y servicio."),
+        (Ruta: "/kpi", Icono: Iconos.Svg("kpi"), Antetitulo: "Indicadores", Titulo: "KPIs integrados",
+         Descripcion: "Atendidas y TMO por marca, supervisores, evolución semanal y detalle por día."),
+        (Ruta: "/no-solucion", Icono: Iconos.Svg("telefono-x"), Antetitulo: "Calidad", Titulo: "No solución",
+         Descripcion: "Llamadas sin solución por marca, servicio, detallado, semana y día."),
+        (Ruta: "/rellamada-24h", Icono: Iconos.Rellamada("24"), Antetitulo: "Rellamadas", Titulo: "Rellamada 24H",
+         Descripcion: "Clientes que vuelven a llamar al servicio en las 24 horas siguientes."),
+        (Ruta: "/rellamada-72h", Icono: Iconos.Rellamada("72"), Antetitulo: "Rellamadas", Titulo: "Rellamada 72H",
+         Descripcion: "Clientes que vuelven a contactar con operaciones en las 72 horas siguientes."),
+    };
+    var donde = "Cuadro de mando";
+}
+<div id="informe" class="menu-solaris">
+    <partial name="_CabeceraMenu" model="donde" />
+
+    <main class="menu">
+        <section class="menu-hero">
+            <div class="menu-hero-texto">
+                <p class="menu-antetitulo">Cuadro de mando</p>
+                <h1>YGMM Técnico</h1>
+                <p>Atención técnica de Yoigo y MásMóvil en Medellín y Bogotá: llamadas atendidas, tiempo medio de operación,
+                    no solución y rellamadas a 24 y 72 horas. Elige un informe.</p>
+                <p class="menu-estado"><span class="modulo-estado @claseEstado">@textoEstado</span></p>
+            </div>
+            <div class="menu-hero-imagen">
+                <img class="portada-imagen" src="~/img/portada-ygmm.webp" asp-append-version="true" width="1983" height="793"
+                     alt="Móvil con las marcas Yoigo y MásMóvil junto a una gráfica que sube" />
+            </div>
+        </section>
+
+        <nav class="modulos" aria-label="Informes">
+            @foreach (var informe in informes)
+            {
+                <a class="modulo" href="@informe.Ruta">
+                    <div class="modulo-cab">
+                        <span class="modulo-icono">@informe.Icono</span>
+                        <span class="etiqueta">Informe</span>
+                    </div>
+                    <h2><small>@informe.Antetitulo</small>@informe.Titulo</h2>
+                    <p class="descripcion">@informe.Descripcion</p>
+                    <div class="modulo-pie">
+                        <div class="modulo-pie-texto">
+                            <span class="modulo-estado @claseEstado">@(claseEstado == "ok" ? "Datos cargados" : textoEstado)</span>
+                            <span class="detalle">@detalle</span>
+                        </div>
+                        <span class="flecha">@Iconos.Svg("flecha")</span>
+                    </div>
+                </a>
+            }
+        </nav>
+    </main>
+</div>
